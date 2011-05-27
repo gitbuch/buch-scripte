@@ -1,0 +1,13 @@
+#!/bin/sh
+
+SUBDIRECTORY_OK=Yes
+. $(git --exec-path)/git-sh-setup
+
+gitdir="$(git rev-parse --git-dir)"
+absolute="$(git rev-parse --show-toplevel)"
+relative="$(git rev-parse --show-cdup)"
+prefix="$(git rev-parse --show-prefix)"
+
+echo "gitdir    absolute    relative    prefix"
+echo "$gitdir   $absolute   $relative   $prefix"
+
