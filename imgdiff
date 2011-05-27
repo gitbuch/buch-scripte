@@ -1,0 +1,15 @@
+#!/bin/zsh
+
+OLD="$2"
+NEW="$5"
+
+# "xc:none" ist "Nichts", entspricht einem fehlenden Bild
+[ "$OLD" = "/dev/null" ] && OLD="xc:none"
+[ "$NEW" = "/dev/null" ] && NEW="xc:none"
+
+exec convert "$OLD" "$NEW" -alpha off \
+    \( -clone 0-1 -compose difference -composite -threshold 0 \) \
+    \( -clone 1-2 -compose copy_opacity -composite \
+       -compose over -background white -flatten \) \
+    -delete 2 -swap 1,2 +append \
+    -background white -flatten x:
