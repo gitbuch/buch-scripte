@@ -1,0 +1,25 @@
+#!/bin/sh
+
+. $(git --exec-path)/git-sh-setup
+get_tree(){ git rev-parse $1^{tree}; }
+
+git for-each-ref refs/tags --format='%(refname)' \
+| while read tag
+do
+    sha1=$(git rev-parse $tag)
+    tree=$(get_tree $tag )
+    new=$sha1
+    while true
+    do
+        parent=$(git rev-parse $new^)
+        git rev-parse $new^2 > /dev/null 2>&1 && break
+        parent_tree=$(get_tree $parent)
+        [ "$parent_tree" != "$tree" ] && break
+        new=$parent
+    done
+    [ "$sha1" = "$new" ] && break
+    echo -n "Found new commit for tag ${tag#refs/tags/}: " \
+        $(git rev-parse --short $new)", resetting..."
+    git update-ref $tag $new
+    echo 'done'
+done
