@@ -1,0 +1,29 @@
+#!/bin/sh
+
+. $(git --exec-path)/git-sh-setup
+svn_prefix='svn/'
+
+convert_ref(){
+    echo -n "converting: $1 to: $2 ..."
+    git update-ref $2 $1
+    git update-ref -d $1
+    echo "done"
+}
+
+get_refs(){
+    git for-each-ref $1 --format='%(refname)'
+}
+
+echo 'Converting svn tags'
+get_refs refs/remotes/${svn_prefix}tags | while read svn_tag
+do
+    new_ref=$(echo $svn_tag | sed -e "s|remotes/$svn_prefix||")
+    convert_ref $svn_tag $new_ref
+done
+
+echo "Converting svn branches"
+get_refs refs/remotes/${svn_prefix} | while read svn_branch
+do
+    new_ref=$(echo $svn_branch | sed -e "s|remotes/$svn_prefix|heads/|")
+    convert_ref $svn_branch $new_ref
+done
