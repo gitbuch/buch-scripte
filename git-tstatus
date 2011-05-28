@@ -1,0 +1,27 @@
+#!/bin/sh
+SUBDIRECTORY_OK=Yes
+. $(git --exec-path)/git-sh-setup
+
+git for-each-ref --shell --format=\
+"refname=%(refname:short) "\
+"author=%(authorname) "\
+"sha1=%(objectname) "\
+"upstream=%(upstream:short)" \
+refs/heads | while read daten
+do
+    eval "$daten"
+    if [ -n "$upstream" ] ; then
+        ahead=$(git rev-list $upstream..$refname | wc -l)
+        behind=$(git rev-list $refname..$upstream | wc -l)
+        echo $refname
+        echo -------------------- 
+        echo     "    Upstream:      "$upstream
+        echo     "    Letzter Autor: "$author
+        echo     "    Commit-ID      "$(git rev-parse --short $sha1)
+        echo -n  "    Status:        "
+        [ $ahead  -gt 0 ] && echo -n "ahead:"$ahead" "
+        [ $behind -gt 0 ] && echo -n "behind:"$behind" "
+        [ $behind -eq 0 ] && [ $ahead -eq 0 ] && echo -n "synchron!"
+        echo
+    fi
+done
