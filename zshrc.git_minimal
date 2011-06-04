@@ -1,0 +1,46 @@
+# Minimale .zshrc mit Completion und vcs_info für Git
+
+# Completion-System laden
+autoload -Uz compinit
+# Completion für Git laden
+compinit git
+
+# vcs_info laden
+autoload -Uz vcs_info
+# promt_subst aktivieren
+setopt prompt_subst
+# precmd definieren
+precmd () { vcs_info }
+# Prompt setzten
+PS1='%n@%m %~${vcs_info_msg_0_} $ '
+
+# Nur Infos für Git aktivieren
+zstyle ':vcs_info:*' enable git
+# Unstaged und staged anzeigen, mit * und +
+zstyle ':vcs_info:git*:*' check-for-changes true
+zstyle ':vcs_info:git*:*' unstagedstr '*'
+zstyle ':vcs_info:git*:*' stagedstr '+'
+
+# Anzeigeformat ändern
+zstyle ':vcs_info:git*:*' formats " (%s)-[%b%u%c]"
+zstyle ':vcs_info:git*:*' actionformats " (%s)-[%b|%a%u%c]"
+
+
+# Hook für untracked Dateien
++vi-untracked(){
+    if [[ ! $(git rev-parse --is-inside-git-dir 2> /dev/null) == 'true' ]] && \
+        [[ -n $(git ls-files --others --exclude-standard) ]] ; then
+        hook_com[staged]+='%%'
+    fi
+}
+
+# Hook für Stash
++vi-stashed(){
+    if git rev-parse --verify refs/stash &> /dev/null ; then
+        hook_com[staged]+='$'
+    fi
+}
+
+# Hooks aktivieren (braucht mindestens Z-Shell 4.3.11)
+zstyle ':vcs_info:git*+set-message:*' hooks stashed untracked
+
