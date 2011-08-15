@@ -3,12 +3,12 @@
 SUBDIRECTORY_OK=Yes
 . $(git --exec-path)/git-sh-setup
 
-[ $# -eq 2 ] || { echo "usage: $(basename $0) <ref1> <ref2>"; exit 1; }
+[ $# -eq 2 ] || { echo "usage: $(basename $0) <ref1> <ref2>" >&2 ; exit 1; }
 
 for i in $1 $2
 do
     if ! git rev-parse --verify $i >| /dev/null 2>&1 ; then
-        echo "Ref:'$i' existiert nicht!" && exit 1
+        echo "Ref:'$i' existiert nicht!" >&2 && exit 1
     fi
 done
 
@@ -16,11 +16,11 @@ one_two=$(git rev-list $1..$2)
 two_one=$(git rev-list $2..$1)
 
 [ $(git rev-parse $1) = $(git rev-parse $2) ] \
-&& echo "$1 und $2 zeigen auf denselben Commit!" && exit 2
+&& echo "$1 und $2 zeigen auf denselben Commit!" >&2 && exit 2
 
 [ -n "$one_two" ] && [ -z "$two_one" ] \
 && echo "FF von $1 nach $2 möglich!" && exit 0
 [ -n "$two_one" ] && [ -z "$one_two" ] \
 && echo "FF von $2 nach $1 möglich!" && exit 0
 
-echo "FF nicht möglich! $1 und $2 sind divergiert!" && exit 3
+echo "FF nicht möglich! $1 und $2 sind divergiert!" >&2 && exit 3
